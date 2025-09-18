@@ -1,4 +1,5 @@
 const ClothingItem = require("../Models/clothingItem");
+
 const createItem = (req, res) => {
   console.log(req);
   console.log(req.body);
@@ -15,7 +16,7 @@ const createItem = (req, res) => {
       res.status(500).send({ message: "Error from createItem", e });
     });
 };
-const getItems = (res, req) => {
+const getItems = (req, res) => {
   ClothingItem.find({})
     .then((items) => res.status(200).send(items))
     .catch((e) => {
@@ -23,7 +24,7 @@ const getItems = (res, req) => {
     });
 };
 
-const updateItem = (res, req) => {
+const updateItem = (req, res) => {
   const { itemId } = req.params;
   const { imageURL } = req.body;
   console.log(itemId, imageURL);
@@ -35,7 +36,7 @@ const updateItem = (res, req) => {
     });
 };
 
-const deleteItem = (res, req) => {
+const deleteItem = (req, res) => {
   const { itemId } = req.params;
   console.log(itemId);
   ClothingItem.findByIdAndDelete(itemId)
