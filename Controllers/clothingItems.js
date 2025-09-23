@@ -16,7 +16,7 @@ const createItem = (req, res) => {
       if (err.name === "ValidationError") {
         return res.status(400).send({ message: err.message });
       }
-      res.status(500).send({ message: "Error from createItem", err });
+      return res.status(500).send({ message: "Error from createItem", err });
     });
 };
 const getItems = (req, res) => {
@@ -44,9 +44,7 @@ const deleteItem = (req, res) => {
   console.log(itemId);
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
-    .then((item) =>
-      res.status(403).send({ message: "Item deleted successfully" })
-    )
+    .then(() => res.status(403).send({ message: "Item deleted successfully" }))
     .catch((err) => {
       if (err.name === "CastError") {
         return res.status(400).send({ message: "Invalid item ID format" });
@@ -54,7 +52,7 @@ const deleteItem = (req, res) => {
       if (err.name === "DocumentNotFoundError") {
         return res.status(404).send({ message: "Item not found" });
       }
-      res.status(500).send({ message: "Error from deleteItem" });
+      return res.status(500).send({ message: "Error from deleteItem" });
     });
 };
 
@@ -73,7 +71,7 @@ const likeItem = (req, res) => {
       if (err.name === "DocumentNotFoundError") {
         return res.status(404).send({ message: "Item not found" });
       }
-      res.status(500).send({ message: "Error from likeItem" });
+      return res.status(500).send({ message: "Error from likeItem" });
     });
 };
 
@@ -92,7 +90,7 @@ const dislikeItem = (req, res) => {
       if (err.name === "DocumentNotFoundError") {
         return res.status(404).send({ message: "Item not found" });
       }
-      res.status(500).send({ message: "Error from dislikeItem" });
+      return res.status(500).send({ message: "Error from dislikeItem" });
     });
 };
 

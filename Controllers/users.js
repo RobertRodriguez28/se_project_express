@@ -1,10 +1,8 @@
-const User = require("../Models/user");
+// const { isJWT } = require("validator");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-const { isJWT } = require("validator");
+const User = require("../Models/user");
 const { JWT_SECRET } = require("../utils/config");
-
-console.log(JWT_SECRET);
 
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
@@ -36,7 +34,7 @@ const createUser = (req, res) => {
       if (err.code === 11000) {
         return res.status(409).send({ message: "Conflict Error" });
       }
-      res.status(500).send({ error: "There has been an error " });
+      return res.status(500).send({ error: "There has been an error " });
     });
 };
 
@@ -77,7 +75,8 @@ const updateUserData = (req, res) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
         return res.status(404).send({ message: err.message });
-      } else if (err.name === "CastError") {
+      }
+      if (err.name === "CastError") {
         return res.status(400).send({ message: err.message });
       }
       return res.status(500).send({ message: err.message });
