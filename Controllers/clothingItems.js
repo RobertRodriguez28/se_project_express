@@ -12,8 +12,11 @@ const createItem = (req, res) => {
       console.log(item);
       res.send(item);
     })
-    .catch((e) => {
-      res.status(500).send({ message: "Error from createItem", e });
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        return res.status(400).send({ message: err.message });
+      }
+      res.status(500).send({ message: "Error from createItem", err });
     });
 };
 const getItems = (req, res) => {
@@ -26,9 +29,9 @@ const getItems = (req, res) => {
 
 const updateItem = (req, res) => {
   const { itemId } = req.params;
-  const { imageURL } = req.body;
-  console.log(itemId, imageURL);
-  ClothingItem.findById(itemId, { $set: { imageURL } })
+  const { imageUrl } = req.body;
+  console.log(itemId, imageUrl);
+  ClothingItem.findByIdAndUpdate(itemId, { $set: { imageUrl } })
     .orFail()
     .then((item) => res.status(200).send({ data: item }))
     .catch((e) => {
@@ -41,33 +44,55 @@ const deleteItem = (req, res) => {
   console.log(itemId);
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
-    .then((item) => res.status(204).send({}))
-    .catch((e) => {
-      res.status(500).send({ message: "Error from deleteItem", e });
+    .then((item) =>
+      res.status(403).send({ message: "Item deleted successfully" })
+    )
+    .catch((err) => {
+      if (err.name === "CastError") {
+        return res.status(400).send({ message: "Invalid item ID format" });
+      }
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(404).send({ message: "Item not found" });
+      }
+      res.status(500).send({ message: "Error from deleteItem" });
     });
 };
 
-module.exports.likeItem = (req, res) => {
+const likeItem = (req, res) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $addToSet: { likes: req.user._id } }, // add _id to the array if it's not there yet
-    { new: true }
+    { new: true, runValidators: true }
   )
+    .orFail()
     .then((item) => res.status(200).send({ item }))
-    .catch((e) => {
-      res.status(500).send({ message: "Error from likeItem", e });
+    .catch((err) => {
+      if (err.name === "CastError") {
+        return res.status(400).send({ message: "Invalid item ID format" });
+      }
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(404).send({ message: "Item not found" });
+      }
+      res.status(500).send({ message: "Error from likeItem" });
     });
 };
 
-module.exports.dislikeItem = (req, res) => {
+const dislikeItem = (req, res) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $pull: { likes: req.user._id } }, // remove _id from the array
     { new: true }
   )
+    .orFail()
     .then((item) => res.status(200).send({ item }))
-    .catch((e) => {
-      res.status(500).send({ message: "Error from dislikeItem", e });
+    .catch((err) => {
+      if (err.name === "CastError") {
+        return res.status(400).send({ message: "Invalid item ID format" });
+      }
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(404).send({ message: "Item not found" });
+      }
+      res.status(500).send({ message: "Error from dislikeItem" });
     });
 };
 
@@ -76,4 +101,6 @@ module.exports = {
   getItems,
   updateItem,
   deleteItem,
+  dislikeItem,
+  likeItem,
 };

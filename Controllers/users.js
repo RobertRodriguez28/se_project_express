@@ -1,17 +1,10 @@
 const User = require("../Models/user");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const { isJWT } = require("validator");
+const { JWT_SECRET } = require("../utils/config");
 
-const JWT_SECRET = process.env.JWT_SECRET;
-
-const getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.status(200).send(users))
-    .catch((err) => {
-      console.log(err);
-      return res.status(500).send({ message: err.message });
-    });
-};
+console.log(JWT_SECRET);
 
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
@@ -46,31 +39,38 @@ const createUser = (req, res) => {
       res.status(500).send({ error: "There has been an error " });
     });
 };
-//   if (err.name === "ValidationError") {
-//     return res.status(400).send({ message: err.message });
-//   }
-//   return res.status(500).send({ message: err.message });
-// });
 
-// Login function
 const signIn = (req, res) => {
   const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
     .then((user) => {
+      console.log("JWT >>>", JWT_SECRET);
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
       return res.status(200).send({ token });
     })
     .catch((err) => {
-      // authentication error
+      console.log("Error: ", err);
       return res.status(400).send({ message: err.message });
     });
 };
+const getUsers = (req, res) => {
+  User.findById(req.user._id)
+    .then((user) => res.send(user))
+    .catch((err) => {
+      console.log(err);
+      return res.status(500).send({ message: err.message });
+    });
+};
 
-const getUser = (req, res) => {
-  const { userId } = req.params;
-  User.findById(userId)
+const updateUserData = (req, res) => {
+  const { name, avatar } = req.body;
+  User.findByIdAndUpdate(
+    req.user._id,
+    { name, avatar },
+    { new: true, runValidators: true }
+  )
     .orFail()
     .then((user) => res.status(200).send(user))
     .catch((err) => {
@@ -84,27 +84,4 @@ const getUser = (req, res) => {
     });
 };
 
-module.exports = { getUsers, createUser, getUser, signIn };
-
-//   User.findOne({ email })
-//     .then((user) => {
-//       if (!user) {
-//         return res.status(404).send({ error: "User not found" });
-//       }
-//       return bcrypt.compare(password, user.password).then((isMatch) => {
-//         if (!isMatch) {
-//           return res.status(401).send({ error: "Authentication failed" });
-//         }
-
-//         const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
-//           expiresIn: "7d",
-//         });
-
-//         return res.send({ token });
-//       });
-//     })
-//     .catch((error) => {
-//       console.error(error);
-//       res.status(500).send({ error: "Internal server error" });
-//     });
-// };
+module.exports = { getUsers, createUser, updateUserData, signIn };
