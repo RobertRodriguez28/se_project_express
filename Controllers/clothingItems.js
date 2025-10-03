@@ -44,7 +44,9 @@ const deleteItem = (req, res) => {
   console.log(itemId);
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
-    .then(() => res.status(403).send({ message: "Item deleted successfully" }))
+    .then((itemId) =>
+      res.status(200).send({ message: "Item deleted successfully" })
+    )
     .catch((err) => {
       if (err.name === "CastError") {
         return res.status(400).send({ message: "Invalid item ID format" });
@@ -63,7 +65,7 @@ const likeItem = (req, res) => {
     { new: true, runValidators: true }
   )
     .orFail()
-    .then((item) => res.status(200).send({ item }))
+    .then((item) => res.status(200).send(item))
     .catch((err) => {
       if (err.name === "CastError") {
         return res.status(400).send({ message: "Invalid item ID format" });
@@ -82,7 +84,7 @@ const dislikeItem = (req, res) => {
     { new: true }
   )
     .orFail()
-    .then((item) => res.status(200).send({ item }))
+    .then((item) => res.status(200).send(item))
     .catch((err) => {
       if (err.name === "CastError") {
         return res.status(400).send({ message: "Invalid item ID format" });

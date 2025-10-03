@@ -6,6 +6,7 @@ const { JWT_SECRET } = require("../utils/config");
 
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
+  console.log("Incoming body:", req.body);
 
   bcrypt
     .hash(password, 10)
@@ -32,7 +33,9 @@ const createUser = (req, res) => {
         return res.status(400).send({ message: err.message });
       }
       if (err.code === 11000) {
-        return res.status(409).send({ message: "Conflict Error" });
+        return res
+          .status(409)
+          .send({ message: "Conflict Error, such a user already exists" });
       }
       return res.status(500).send({ error: "There has been an error " });
     });
